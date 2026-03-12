@@ -4,22 +4,22 @@
             <stop offset="0%" style="stop-color:#3b82f6" />
             <stop offset="100%" style="stop-color:#8b5cf6" />
         </linearGradient>
-        <filter id="glow">
-            <feGaussianBlur stdDeviation="2.5" result="blur" />
-            <feComposite in="SourceGraphic" in2="blur" operator="over" />
-        </filter>
     </defs>
-    <!-- Background Circle -->
-    <circle cx="50" cy="50" r="45" fill="rgba(59, 130, 246, 0.05)" stroke="url(#iconGradient)" stroke-width="2" />
+    <!-- Background -->
+    <rect x="8" y="8" width="84" height="84" rx="12" fill="rgba(59, 130, 246, 0.08)" stroke="url(#iconGradient)" stroke-width="2" />
     
-    <!-- Central Hub -->
-    <circle cx="50" cy="40" r="12" fill="url(#iconGradient)" filter="url(#glow)" />
+    <!-- Header bar -->
+    <rect x="16" y="16" width="68" height="10" rx="3" fill="url(#iconGradient)" opacity="0.3" />
     
-    <!-- Connection Lines -->
-    <path d="M50 52V75M35 65L50 52L65 65" stroke="url(#iconGradient)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+    <!-- Service Row 1 -->
+    <circle cx="28" cy="40" r="6" fill="#22c55e" />
+    <rect x="40" y="36" width="36" height="8" rx="2" fill="url(#iconGradient)" opacity="0.4" />
     
-    <!-- Nodes -->
-    <circle cx="35" cy="65" r="5" fill="url(#iconGradient)" />
-    <circle cx="65" cy="65" r="5" fill="url(#iconGradient)" />
-    <circle cx="50" cy="75" r="5" fill="url(#iconGradient)" />
+    <!-- Service Row 2 -->
+    <circle cx="28" cy="58" r="6" fill="#22c55e" />
+    <rect x="40" y="54" width="28" height="8" rx="2" fill="url(#iconGradient)" opacity="0.4" />
+    
+    <!-- Service Row 3 (offline) -->
+    <circle cx="28" cy="76" r="6" fill="#ef4444" />
+    <rect x="40" y="72" width="32" height="8" rx="2" fill="url(#iconGradient)" opacity="0.2" />
 </svg>
