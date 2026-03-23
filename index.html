@@ -331,7 +331,7 @@
             <span class="stat-value" id="stat-status">OK</span>
         </div>
     </div>
-    <div class="cpu-info" id="cpu-info">...</div>
+    <div class="cpu-info" id="cpu-info">Intel(R) Core(TM) i7-5500U CPU @ 2.40GHz</div>
 
     <main class="grid" id="services-grid">
         <a href="https://ha.navynui.cc" class="card" data-service="homeassistant">
@@ -484,7 +484,6 @@
                     document.getElementById('stat-uptime').textContent = data.system.uptime;
                     document.getElementById('stat-load').textContent = data.system.load;
                     document.getElementById('stat-memory').textContent = data.system.memory + '%';
-                    document.getElementById('cpu-info').textContent = data.system.cpu;
                 }
 
                 // Update Service Status Dots

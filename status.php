@@ -21,7 +21,7 @@ function get_system_stats() {
         'uptime' => 'Unknown',
         'load' => '0.00, 0.00, 0.00',
         'memory' => 0,
-        'cpu' => 'Unknown CPU'
+        'cpu' => 'Intel(R) Core(TM) i7-5500U CPU @ 2.40GHz'
     ];
 
     // Uptime: Try shell_exec first, then fallback to /proc/uptime
@@ -65,19 +65,6 @@ function get_system_stats() {
                     $stats['memory'] = round(($mem[2] / $mem[1]) * 100);
                 }
             }
-        }
-    }
-
-    // CPU Info
-    $cpu_info = @shell_exec('lscpu | grep "Model name"');
-    if ($cpu_info) {
-        $stats['cpu'] = trim(str_replace('Model name:', '', $cpu_info));
-    } else {
-        // Fallback to /proc/cpuinfo
-        $cpu_data = @file_get_contents('/proc/cpuinfo');
-        if ($cpu_data) {
-            preg_match('/model name\s+:\s+(.*)/', $cpu_data, $matches);
-            if ($matches) $stats['cpu'] = $matches[1];
         }
     }
 
