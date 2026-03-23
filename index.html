@@ -221,6 +221,88 @@
             color: var(--text-secondary);
             opacity: 0.5;
         }
+        @media (max-width: 639.98px) {
+            body {
+                padding: 1rem 1rem;
+            }
+
+            header {
+                margin-bottom: 2rem;
+                gap: 0.5rem;
+            }
+
+            .logo {
+                width: 60px;
+                height: 60px;
+            }
+
+            h1 {
+                font-size: 1.75rem;
+            }
+
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+                margin-bottom: 2rem;
+            }
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 3rem;
+            animation: fadeIn 1s ease-out;
+        }
+
+        @media (min-width: 640px) {
+            .stats-container {
+                grid-template-columns: repeat(4, 1fr);
+                max-width: 700px;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .stats-container {
+                max-width: 1000px;
+            }
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+        }
+
+        .stat-value {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .cpu-info {
+            grid-column: 1 / -1;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: -0.5rem;
+            margin-bottom: 1.5rem;
+            opacity: 0.8;
+            animation: fadeIn 1.2s ease-out;
+        }
     </style>
 </head>
 
@@ -230,6 +312,26 @@
         <h1>Cloud Hub</h1>
         <p>Personal Web Services Dashboard</p>
     </header>
+
+    <div class="stats-container" id="stats-container">
+        <div class="stat-card">
+            <span class="stat-label">Uptime</span>
+            <span class="stat-value" id="stat-uptime">...</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Load Avg</span>
+            <span class="stat-value" id="stat-load">...</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Memory</span>
+            <span class="stat-value" id="stat-memory">...</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Status</span>
+            <span class="stat-value" id="stat-status">OK</span>
+        </div>
+    </div>
+    <div class="cpu-info" id="cpu-info">...</div>
 
     <main class="grid" id="services-grid">
         <a href="https://ha.navynui.cc" class="card" data-service="homeassistant">
@@ -367,20 +469,55 @@
 
 
     <footer>
-        &copy; 2026 Admin Dashboard &bull; navynui.cc
+        &copy; 2026 Admin Dashboard &bull; navynui.cc<br>
+        <span id="last-updated" style="font-size: 0.7rem; margin-top: 0.5rem; display: inline-block;">Last updated: ...</span>
     </footer>
 
     <script>
         async function fetchStatus() {
             try {
                 const res = await fetch('status.php');
-                const status = await res.json();
-                document.querySelectorAll('.card[data-service]').forEach(card => {
-                    const key = card.dataset.service;
-                    const dot = card.querySelector('.status-dot');
-                    if (dot && status[key]) dot.classList.add('online');
-                });
-            } catch (e) { console.error(e); }
+                const data = await res.json();
+                
+                // Update System Stats
+                if (data.system) {
+                    document.getElementById('stat-uptime').textContent = data.system.uptime;
+                    document.getElementById('stat-load').textContent = data.system.load;
+                    document.getElementById('stat-memory').textContent = data.system.memory + '%';
+                    document.getElementById('cpu-info').textContent = data.system.cpu;
+                }
+
+                // Update Service Status Dots
+                if (data.services) {
+                    let allOnline = true;
+                    document.querySelectorAll('.card[data-service]').forEach(card => {
+                        const key = card.dataset.service;
+                        const dot = card.querySelector('.status-dot');
+                        if (dot && data.services[key]) {
+                            dot.classList.add('online');
+                        } else if (dot) {
+                            dot.classList.remove('online');
+                            allOnline = false;
+                        }
+                    });
+                    
+                    const statusCard = document.getElementById('stat-status');
+                    if (allOnline) {
+                        statusCard.textContent = 'All OK';
+                        statusCard.style.color = '#22c55e';
+                    } else {
+                        statusCard.textContent = 'Issues';
+                        statusCard.style.color = '#ef4444';
+                    }
+                }
+
+                // Update Timestamp
+                document.getElementById('last-updated').textContent = 'Last updated: ' + new Date().toLocaleString();
+            } catch (e) { 
+                console.error(e);
+                document.getElementById('stat-status').textContent = 'Error';
+                document.getElementById('stat-status').style.color = '#ef4444';
+            }
         }
         fetchStatus();
     </script>

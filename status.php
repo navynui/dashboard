@@ -16,18 +16,55 @@ $services = [
     'sea' => 'http://192.168.31.244:80/',
 ];
 
-$status = [];
+function get_system_stats() {
+    $stats = [
+        'uptime' => 'Unknown',
+        'load' => '0.00, 0.00, 0.00',
+        'memory' => 0,
+        'cpu' => 'Unknown CPU'
+    ];
+
+    // Uptime and Load
+    $uptime_info = shell_exec('uptime -p');
+    if ($uptime_info) $stats['uptime'] = trim(str_replace('up ', '', $uptime_info));
+    
+    $load_info = sys_getloadavg();
+    if ($load_info) $stats['load'] = implode(', ', array_map(fn($l) => number_format($l, 2), $load_info));
+
+    // Memory
+    $free = shell_exec('free');
+    if ($free) {
+        $free = (string)trim($free);
+        $free_arr = explode("\n", $free);
+        $mem = explode(" ", preg_replace("/\s+/", " ", $free_arr[1]));
+        $mem_total = $mem[1];
+        $mem_used = $mem[2];
+        $stats['memory'] = round(($mem_used / $mem_total) * 100);
+    }
+
+    // CPU Info
+    $cpu_info = shell_exec('lscpu | grep "Model name"');
+    if ($cpu_info) {
+        $stats['cpu'] = trim(str_replace('Model name:', '', $cpu_info));
+    }
+
+    return $stats;
+}
+
+$status = [
+    'services' => [],
+    'system' => get_system_stats()
+];
 
 foreach ($services as $name => $url) {
     $ch = curl_init($url);
     $curlOptions = [
         CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT => 3,
+        CURLOPT_TIMEOUT => 2, // Slightly shorter timeout for snappier refresh
         CURLOPT_FOLLOWLOCATION => true,
         CURLOPT_MAXREDIRS => 1,
     ];
 
-    // Disable SSL verification for internal HTTPS (e.g. Proxmox)
     if (strpos($url, 'https://') === 0) {
         $curlOptions[CURLOPT_SSL_VERIFYPEER] = false;
         $curlOptions[CURLOPT_SSL_VERIFYHOST] = false;
@@ -38,7 +75,7 @@ foreach ($services as $name => $url) {
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
 
-    $status[$name] = $httpCode >= 200 && $httpCode < 400 || $httpCode === 401;
+    $status['services'][$name] = ($httpCode >= 200 && $httpCode < 400) || $httpCode === 401;
 }
 
 echo json_encode($status);
