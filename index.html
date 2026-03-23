@@ -488,26 +488,22 @@
 
                 // Update Service Status Dots
                 if (data.services) {
-                    let allOnline = true;
-                    document.querySelectorAll('.card[data-service]').forEach(card => {
+                    let onlineCount = 0;
+                    const totalCards = document.querySelectorAll('.card[data-service]');
+                    totalCards.forEach(card => {
                         const key = card.dataset.service;
                         const dot = card.querySelector('.status-dot');
                         if (dot && data.services[key]) {
                             dot.classList.add('online');
+                            onlineCount++;
                         } else if (dot) {
                             dot.classList.remove('online');
-                            allOnline = false;
                         }
                     });
                     
                     const statusCard = document.getElementById('stat-status');
-                    if (allOnline) {
-                        statusCard.textContent = 'All OK';
-                        statusCard.style.color = '#22c55e';
-                    } else {
-                        statusCard.textContent = 'Issues';
-                        statusCard.style.color = '#ef4444';
-                    }
+                    statusCard.textContent = `${onlineCount} / ${totalCards.length}`;
+                    statusCard.style.color = (onlineCount === totalCards.length) ? '#22c55e' : '#f59e0b'; // Green if all up, Amber if some down
                 }
 
                 // Update Timestamp
