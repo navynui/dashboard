@@ -24,28 +24,61 @@ function get_system_stats() {
         'cpu' => 'Unknown CPU'
     ];
 
-    // Uptime and Load
-    $uptime_info = shell_exec('uptime -p');
-    if ($uptime_info) $stats['uptime'] = trim(str_replace('up ', '', $uptime_info));
+    // Uptime: Try shell_exec first, then fallback to /proc/uptime
+    $uptime_info = @shell_exec('uptime -p');
+    if ($uptime_info) {
+        $stats['uptime'] = trim(str_replace('up ', '', $uptime_info));
+    } else {
+        $uptime_data = @file_get_contents('/proc/uptime');
+        if ($uptime_data) {
+            $seconds = (int)explode(' ', $uptime_data)[0];
+            $days = floor($seconds / 86400);
+            $hours = floor(($seconds % 86400) / 3600);
+            $mins = floor(($seconds % 3600) / 60);
+            if ($days > 0) $stats['uptime'] = "$days days, $hours hours, $mins mins";
+            else if ($hours > 0) $stats['uptime'] = "$hours hours, $mins mins";
+            else $stats['uptime'] = "$mins mins";
+        }
+    }
     
+    // Load: Use built-in function
     $load_info = sys_getloadavg();
     if ($load_info) $stats['load'] = implode(', ', array_map(fn($l) => number_format($l, 2), $load_info));
 
-    // Memory
-    $free = shell_exec('free');
-    if ($free) {
-        $free = (string)trim($free);
-        $free_arr = explode("\n", $free);
-        $mem = explode(" ", preg_replace("/\s+/", " ", $free_arr[1]));
-        $mem_total = $mem[1];
-        $mem_used = $mem[2];
-        $stats['memory'] = round(($mem_used / $mem_total) * 100);
+    // Memory: Try /proc/meminfo for container compatibility
+    $meminfo = @file_get_contents('/proc/meminfo');
+    if ($meminfo) {
+        preg_match('/MemTotal:\s+(\d+)/', $meminfo, $total);
+        preg_match('/MemAvailable:\s+(\d+)/', $meminfo, $available);
+        if ($total && $available) {
+            $used = (int)$total[1] - (int)$available[1];
+            $stats['memory'] = round(($used / (int)$total[1]) * 100);
+        }
+    } else {
+        // Fallback to free command
+        $free = @shell_exec('free');
+        if ($free) {
+            $free_arr = explode("\n", (string)trim($free));
+            if (isset($free_arr[1])) {
+                $mem = explode(" ", preg_replace("/\s+/", " ", $free_arr[1]));
+                if (isset($mem[1]) && isset($mem[2]) && $mem[1] > 0) {
+                    $stats['memory'] = round(($mem[2] / $mem[1]) * 100);
+                }
+            }
+        }
     }
 
     // CPU Info
-    $cpu_info = shell_exec('lscpu | grep "Model name"');
+    $cpu_info = @shell_exec('lscpu | grep "Model name"');
     if ($cpu_info) {
         $stats['cpu'] = trim(str_replace('Model name:', '', $cpu_info));
+    } else {
+        // Fallback to /proc/cpuinfo
+        $cpu_data = @file_get_contents('/proc/cpuinfo');
+        if ($cpu_data) {
+            preg_match('/model name\s+:\s+(.*)/', $cpu_data, $matches);
+            if ($matches) $stats['cpu'] = $matches[1];
+        }
     }
 
     return $stats;
