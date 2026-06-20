@@ -3,10 +3,10 @@ header('Content-Type: application/json');
 
 $services = [
     'homeassistant' => 'http://192.168.31.182:8123/',
-    'jellyfin' => 'http://192.168.31.243:8096/',
+    'jellyfin' => 'https://jellyfin.navynui.cc/',
     'qbittorrent' => 'http://192.168.31.243:8080/',
     'prowlarr' => 'http://192.168.31.243:9696/',
-    'fintracker' => 'http://192.168.31.243:8000/',
+    'fintracker' => 'https://fin.navynui.cc/',
     'dbgate' => 'http://192.168.31.243:8002/',
     'fintrackerv2' => 'http://192.168.31.243:3000/',
     'codeserver' => 'http://192.168.31.243:2000/',
@@ -14,6 +14,9 @@ $services = [
     'camera' => 'http://192.168.31.244:8080/',
     'blockyui' => 'http://192.168.31.243:8081/',
     'sea' => 'http://192.168.31.244:80/',
+    'llama_cpp' => 'http://192.168.31.129:8080/',
+    'llm_mobile' => 'http://192.168.31.129:8000/',
+    'comfyui' => 'http://192.168.31.129:8188/',
 ];
 
 function get_system_stats() {
@@ -80,9 +83,12 @@ foreach ($services as $name => $url) {
     $ch = curl_init($url);
     $curlOptions = [
         CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT => 2, // Slightly shorter timeout for snappier refresh
+        CURLOPT_TIMEOUT => 5,
+        CURLOPT_CONNECTTIMEOUT => 2,
         CURLOPT_FOLLOWLOCATION => true,
         CURLOPT_MAXREDIRS => 1,
+        CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4,
+        CURLOPT_USERAGENT => 'Mozilla/5.0 (compatible; StatusBot/1.0)',
     ];
 
     if (strpos($url, 'https://') === 0) {
@@ -93,9 +99,10 @@ foreach ($services as $name => $url) {
     curl_setopt_array($ch, $curlOptions);
     curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlErr = curl_errno($ch);
     curl_close($ch);
 
-    $status['services'][$name] = ($httpCode >= 200 && $httpCode < 400) || $httpCode === 401;
+    $status['services'][$name] = (($httpCode >= 200 && $httpCode < 400) || $httpCode === 401) && $curlErr === 0;
 }
 
 echo json_encode($status);
