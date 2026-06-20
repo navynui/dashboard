@@ -82,4 +82,4 @@ server {
 
 The dashboard is designed to be simple and easy to extend. All icons are inline SVGs for better performance and customization.
 
-For more information about agents, see AGENTS.md.
+For details on the Hermes agent’s progress reporting via `text.md`, see AGENTS.md.
