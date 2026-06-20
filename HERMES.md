@@ -22,6 +22,13 @@ This document describes the responsibilities and capabilities of the **Hermes** 
 - Only authorized users (admin) may execute chores.
 - All actions are logged with timestamps and user information.
 
+## One‑Way Output Channel
+- **`hermes.html` is a read‑only output window**.  
+- The Hermes agent writes status, logs, and results to `hermes.html`.  
+- The file is served at `https://www.navynui.cc/hermes.html`.  
+- Users can view the content through a browser, but cannot send input through this page.  
+- All commands must be issued via the administrative console or API; the HTML page is strictly for display.
+
 ## Future Extensions
 - Integration with system monitoring for automatic trigger.
 - Web UI for chore configuration without editing scripts.
