@@ -10,7 +10,7 @@ try {
         foreach ($items as $item) {
             if ($item === '.' || $item === '..') continue;
             $fullPath = $dir . DIRECTORY_SEPARATOR . $item;
-            if (is_file($fullPath) && strtolower(pathinfo($item, PATHINFO_EXTENSION)) === 'md') {
+            if (is_file($fullPath) && in_array(strtolower(pathinfo($item, PATHINFO_EXTENSION)), ['md', 'txt', 'csv'])) {
                 $files[] = $item;
             }
         }

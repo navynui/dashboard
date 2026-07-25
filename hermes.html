@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reading — text.md</title>
+    <title>Hermes · text.md</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -491,10 +491,91 @@
         const mdSelector = document.getElementById('md-selector');
         let currentFile = null;
 
+        // ── Rainbow CSV column colours ──
+        const RAINBOW_COLORS = [
+            '#e06c75', '#d19a66', '#e5c07b', '#98c379',
+            '#56b6c2', '#61afef', '#c678dd', '#be5046'
+        ];
+
+        function extFrom(name) {
+            const m = name.match(/\.([^.]+)$/);
+            return m ? m[1].toLowerCase() : '';
+        }
+
+        function parseCSV(text) {
+            const rows = [];
+            const lines = text.split(/\r?\n/);
+            for (const line of lines) {
+                if (line.trim() === '') continue;
+                const fields = [];
+                let cur = '';
+                let inQ = false;
+                for (let i = 0; i < line.length; i++) {
+                    const ch = line[i];
+                    if (inQ) {
+                        if (ch === '"') {
+                            if (i + 1 < line.length && line[i + 1] === '"') {
+                                cur += '"';
+                                i++;
+                            } else {
+                                inQ = false;
+                            }
+                        } else {
+                            cur += ch;
+                        }
+                    } else {
+                        if (ch === '"') {
+                            inQ = true;
+                        } else if (ch === ',') {
+                            fields.push(cur);
+                            cur = '';
+                        } else {
+                            cur += ch;
+                        }
+                    }
+                }
+                fields.push(cur);
+                rows.push(fields);
+            }
+            return rows;
+        }
+
+        function renderCSV(csvText) {
+            const rows = parseCSV(csvText);
+            if (!rows.length) return '<p style="color:var(--text-faint)">Empty CSV</p>';
+
+            const maxCols = rows.reduce((m, r) => Math.max(m, r.length), 0);
+            let html = '<div style="overflow-x:auto;border:1px solid var(--line);border-radius:6px;">';
+            html += '<table style="border-collapse:collapse;width:100%;font-size:0.84rem;font-family:\'IBM Plex Mono\',monospace;margin:0;display:table;">';
+
+            rows.forEach((row, ri) => {
+                html += '<tr>';
+                for (let ci = 0; ci < maxCols; ci++) {
+                    const val = row[ci] !== undefined ? row[ci] : '';
+                    const color = RAINBOW_COLORS[ci % RAINBOW_COLORS.length];
+                    const bg = color + '0d';  // ~5% alpha
+                    const tag = ri === 0 ? 'th' : 'td';
+                    const extra = ri === 0 ? 'font-weight:600;border-top:2px solid ' + color + ';' : '';
+                    html += `<${tag} style="padding:0.45rem 0.75rem;border-right:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);background:${bg};color:${color};white-space:nowrap;${extra}">${escapeHtml(val)}</${tag}>`;
+                }
+                html += '</tr>';
+            });
+
+            html += '</table></div>';
+            return html;
+        }
+
+        function escapeHtml(str) {
+            const d = document.createElement('div');
+            d.textContent = str;
+            return d.innerHTML;
+        }
+
         function renderFile(filename) {
             if (!filename) return;
             currentFile = filename;
             fileLabel.textContent = filename;
+            document.title = 'Hermes · ' + filename;
             document.getElementById('footer-meta').textContent = filename + ' · rendered locally';
             mdSelector.value = filename;
 
@@ -503,9 +584,18 @@
                     if (!r.ok) throw new Error('HTTP ' + r.status + ' — file not found or not accessible');
                     return r.text();
                 })
-                .then(md => {
-                    article.innerHTML = marked.parse(md);
-                    if (window.Prism) Prism.highlightAllUnder(article);
+                .then(text => {
+                    const ext = extFrom(filename);
+
+                    if (ext === 'csv') {
+                        article.innerHTML = renderCSV(text);
+                    } else if (ext === 'txt') {
+                        article.innerHTML = `<pre style="background:var(--bg-code);border:1px solid var(--line);border-radius:6px;padding:1.5rem 1.75rem;overflow-x:auto;font-family:'IBM Plex Mono',monospace;font-size:0.86rem;line-height:1.65;color:var(--text);white-space:pre-wrap;word-break:break-word;margin:0;">${escapeHtml(text)}</pre>`;
+                    } else {
+                        article.innerHTML = marked.parse(text);
+                        if (window.Prism) Prism.highlightAllUnder(article);
+                    }
+
                     document.getElementById('footer-time').textContent = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
                 })
                 .catch(err => {
@@ -535,14 +625,14 @@
                     mdSelector.appendChild(opt);
                 });
 
-                const defaultFile = files.find(f => f === 'text.md') || files[0];
+                const defaultFile = files.find(f => f === 'text.md' || f === 'text.txt' || f === 'text.csv') || files[0];
                 if (defaultFile) {
                     renderFile(defaultFile);
                 } else {
                     document.getElementById('content').innerHTML = `
                         <div class="error-panel">
-                            <h1>No markdown files found</h1>
-                            <p style="color: var(--text-mute);">Could not locate any <code>.md</code> files in the current directory.</p>
+                            <h1>No viewable files found</h1>
+                            <p style="color: var(--text-mute);">Could not locate any <code>.md</code>, <code>.txt</code>, or <code>.csv</code> files in the current directory.</p>
                         </div>
                     `;
                 }
