@@ -187,6 +187,10 @@
             max-width: 760px;
             margin: 0 auto;
             padding: 5rem 2rem 8rem;
+            transition: max-width 400ms var(--ease-quiet);
+        }
+        main.csv-active {
+            max-width: min(94vw, 1400px);
         }
         article#content { font-feature-settings: "kern" 1, "liga" 1; }
         /* ─────────── Typography ─────────── */
@@ -552,11 +556,14 @@
                 html += '<tr>';
                 for (let ci = 0; ci < maxCols; ci++) {
                     const val = row[ci] !== undefined ? row[ci] : '';
-                    const color = RAINBOW_COLORS[ci % RAINBOW_COLORS.length];
-                    const bg = color + '0d';  // ~5% alpha
-                    const tag = ri === 0 ? 'th' : 'td';
-                    const extra = ri === 0 ? 'font-weight:600;border-top:2px solid ' + color + ';' : '';
-                    html += `<${tag} style="padding:0.45rem 0.75rem;border-right:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);background:${bg};color:${color};white-space:nowrap;${extra}">${escapeHtml(val)}</${tag}>`;
+                    if (ri === 0) {
+                        // Header row — muted, uppercase, no rainbow
+                        html += `<th style="padding:0.6rem 0.75rem;border-right:1px solid var(--line-soft);border-bottom:2px solid var(--accent-dim);background:var(--bg-elev);color:var(--text-mute);font-family:'Montserrat',sans-serif;font-weight:700;font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;white-space:nowrap;">${escapeHtml(val)}</th>`;
+                    } else {
+                        const color = RAINBOW_COLORS[ci % RAINBOW_COLORS.length];
+                        const bg = color + '0d';
+                        html += `<td style="padding:0.45rem 0.75rem;border-right:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);background:${bg};color:${color};white-space:nowrap;">${escapeHtml(val)}</td>`;
+                    }
                 }
                 html += '</tr>';
             });
@@ -579,6 +586,8 @@
             document.getElementById('footer-meta').textContent = filename + ' · rendered locally';
             mdSelector.value = filename;
 
+            const mainEl = document.querySelector('main');
+
             fetch(filename)
                 .then(r => {
                     if (!r.ok) throw new Error('HTTP ' + r.status + ' — file not found or not accessible');
@@ -588,12 +597,16 @@
                     const ext = extFrom(filename);
 
                     if (ext === 'csv') {
+                        mainEl.classList.add('csv-active');
                         article.innerHTML = renderCSV(text);
-                    } else if (ext === 'txt') {
-                        article.innerHTML = `<pre style="background:var(--bg-code);border:1px solid var(--line);border-radius:6px;padding:1.5rem 1.75rem;overflow-x:auto;font-family:'IBM Plex Mono',monospace;font-size:0.86rem;line-height:1.65;color:var(--text);white-space:pre-wrap;word-break:break-word;margin:0;">${escapeHtml(text)}</pre>`;
                     } else {
-                        article.innerHTML = marked.parse(text);
-                        if (window.Prism) Prism.highlightAllUnder(article);
+                        mainEl.classList.remove('csv-active');
+                        if (ext === 'txt') {
+                            article.innerHTML = `<pre style="background:var(--bg-code);border:1px solid var(--line);border-radius:6px;padding:1.5rem 1.75rem;overflow-x:auto;font-family:'IBM Plex Mono',monospace;font-size:0.86rem;line-height:1.65;color:var(--text);white-space:pre-wrap;word-break:break-word;margin:0;">${escapeHtml(text)}</pre>`;
+                        } else {
+                            article.innerHTML = marked.parse(text);
+                            if (window.Prism) Prism.highlightAllUnder(article);
+                        }
                     }
 
                     document.getElementById('footer-time').textContent = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
@@ -605,9 +618,16 @@
                             <p style="color: var(--text-mute); margin-bottom: 1.5rem;">${err.message}.</p>
                         </div>
                     `;
+                    mainEl.classList.remove('csv-active');
                     if (window.Prism) Prism.highlightAllUnder(article);
                     document.getElementById('footer-meta').textContent = filename + ' · failed to load';
                 });
+        }
+
+        function setQueryParam(file) {
+            const url = new URL(window.location);
+            url.searchParams.set('file', file);
+            window.history.replaceState({ file: file }, '', url);
         }
 
         // Scan current directory for .md files via PHP utility
@@ -625,9 +645,15 @@
                     mdSelector.appendChild(opt);
                 });
 
-                const defaultFile = files.find(f => f === 'text.md' || f === 'text.txt' || f === 'text.csv') || files[0];
+                // Check query param first
+                const params = new URLSearchParams(window.location.search);
+                const queryFile = params.get('file');
+                const targetFile = queryFile && files.includes(queryFile) ? queryFile : null;
+
+                const defaultFile = targetFile || files.find(f => f === 'text.md' || f === 'text.txt' || f === 'text.csv') || files[0];
                 if (defaultFile) {
                     renderFile(defaultFile);
+                    if (!queryFile || queryFile !== defaultFile) setQueryParam(defaultFile);
                 } else {
                     document.getElementById('content').innerHTML = `
                         <div class="error-panel">
@@ -637,13 +663,18 @@
                     `;
                 }
             } catch (err) {
-                mdSelector.innerHTML = '<option value="text.md">text.md</option>';
-                renderFile('text.md');
+                const params = new URLSearchParams(window.location.search);
+                const queryFile = params.get('file');
+                const fallback = queryFile || 'text.md';
+                mdSelector.innerHTML = `<option value="${fallback}">${fallback}</option>`;
+                renderFile(fallback);
+                setQueryParam(fallback);
             }
         }
 
         mdSelector.addEventListener('change', () => {
             renderFile(mdSelector.value);
+            setQueryParam(mdSelector.value);
         });
 
         // Initial scan and render
