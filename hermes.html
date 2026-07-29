@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hermes · text.md</title>
+    <title>Hermes · Feed</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css">
     <style>
         :root {
@@ -21,6 +21,7 @@
             --line: #232c27;
             --line-soft: #1a201d;
             --ease-quiet: cubic-bezier(.22, 1, .36, 1);
+            --feed-w: 640px;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
@@ -45,8 +46,15 @@
             pointer-events: none;
             z-index: 0;
         }
-        /* ─────────── Top Menubar ─────────── */
-        #md-tabs {
+
+        /* ─── Scrollbar ─── */
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 5px; border: 2px solid var(--bg); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-dim); }
+
+        /* ═══════════════ TOP BAR ═══════════════ */
+        #topbar {
             position: sticky;
             top: 0;
             z-index: 50;
@@ -54,146 +62,334 @@
             justify-content: space-between;
             align-items: center;
             padding: 0 2rem;
+            height: 52px;
             background: rgba(13,19,16,0.95);
             backdrop-filter: blur(20px) saturate(140%);
             -webkit-backdrop-filter: blur(20px) saturate(140%);
             border-bottom: 1px solid var(--line);
-            overflow-x: auto;
-            scrollbar-width: none;
         }
-        #md-tabs::-webkit-scrollbar { display: none; }
-        .md-tab {
-            padding: 0.75rem 1rem;
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 11px;
-            font-weight: 500;
-            letter-spacing: 0.04em;
-            color: var(--text-mute);
-            text-decoration: none;
-            white-space: nowrap;
-            border-bottom: 2px solid transparent;
-            transition: color 300ms ease, border-color 300ms ease;
-            cursor: pointer;
-            background: none;
-            border-top: none;
-            border-left: none;
-            border-right: none;
-        }
-        .md-tab:hover { color: var(--text); }
-        .md-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-        .md-tab-home {
-            font-family: 'Inter', system-ui, sans-serif;
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            color: var(--text-mute);
-            text-decoration: none;
-            padding: 0.75rem 0.5rem;
-            border-bottom: 2px solid transparent;
-            transition: color 300ms ease, border-color 300ms ease;
-            white-space: nowrap;
-            margin-left: auto;
-        }
-        .md-tab-home:hover { color: var(--text); border-bottom-color: var(--text-mute); }
-        /* ─────────── Dropdown Selector ─────────── */
-        #md-selector {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 11px;
-            font-weight: 500;
-            letter-spacing: 0.04em;
-            color: var(--text-mute);
-            background: transparent;
-            border: 1px solid var(--line);
-            border-radius: 4px;
-            padding: 0.35rem 0.6rem;
-            cursor: pointer;
-            outline: none;
-            max-width: 240px;
-            transition: color 300ms ease, border-color 300ms ease;
-        }
-        #md-selector:hover { color: var(--text); border-color: var(--text-mute); }
-        #md-selector option { background: var(--bg-elev); color: var(--text); }
-        /* ─────────── Header ─────────── */
-        header {
-            position: sticky;
-            top: 0;
-            z-index: 10;
+        .topbar-left {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 1.25rem 2rem;
-            background: rgba(13,19,16,0.78);
-            backdrop-filter: blur(20px) saturate(140%);
-            -webkit-backdrop-filter: blur(20px) saturate(140%);
-            border-bottom: 1px solid var(--line);
+            gap: 0.75rem;
+        }
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
         .brand {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 0.5rem;
             font-family: 'Montserrat', sans-serif;
             font-weight: 900;
             font-size: 12px;
             letter-spacing: 0.24em;
             text-transform: uppercase;
-            color: var(--text-mute);
+            color: var(--text);
         }
         .brand-dot {
-            width: 6px;
-            height: 6px;
+            width: 7px;
+            height: 7px;
             border-radius: 50%;
             background: var(--accent);
+            flex-shrink: 0;
         }
-        .brand-name { color: var(--text); }
-        .brand-file {
-            color: var(--text-faint);
-            font-family: 'IBM Plex Mono', monospace;
-            font-weight: 400;
-            text-transform: none;
-            letter-spacing: 0.02em;
-            font-size: 12px;
-        }
-        .back-btn {
+        .topbar-link {
             font-family: 'Inter', sans-serif;
             font-size: 11px;
             font-weight: 500;
             letter-spacing: 0.2em;
             text-transform: uppercase;
-            color: var(--text);
+            color: var(--text-mute);
             text-decoration: none;
-            padding: 0.8rem 1.4rem 0.8rem 1.2rem;
-            border: 1px solid var(--line);
-            border-radius: 999px;
-            background: transparent;
-            transition: border-color 400ms var(--ease-quiet), color 400ms var(--ease-quiet), transform 400ms var(--ease-quiet);
-            display: inline-flex;
+            padding: 0.4rem 0.6rem;
+            border-radius: 4px;
+            transition: color 300ms ease, background 300ms ease;
+        }
+        .topbar-link:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+
+        /* Back button — shown only in reader */
+        #back-btn {
+            display: none;
             align-items: center;
-            gap: 0.6rem;
+            gap: 0.4rem;
+            background: none;
+            border: none;
+            color: var(--text-mute);
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            transition: color 300ms ease, background 300ms ease;
             white-space: nowrap;
         }
-        .back-btn:hover { border-color: var(--accent); color: var(--accent); }
-        .back-btn-arrow {
-            display: inline-block;
-            transition: transform 400ms var(--ease-quiet);
+        #back-btn:hover { color: var(--accent); background: rgba(201,169,97,0.06); }
+        #back-btn .arrow { display: inline-block; transition: transform 300ms var(--ease-quiet); font-size: 15px; }
+        #back-btn:hover .arrow { transform: translateX(-3px); }
+
+        #topbar-filename {
+            display: none;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            color: var(--text-faint);
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* ═══════════════ LIST VIEW ═══════════════ */
+        #view-list {
+            position: relative;
+            z-index: 1;
+            max-width: var(--feed-w);
+            margin: 0 auto;
+            padding: 2rem 1.5rem 5rem;
+        }
+
+        .list-header {
+            display: flex;
+            align-items: baseline;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+            padding-bottom: 1.25rem;
+            border-bottom: 1px solid var(--line-soft);
+        }
+        .list-header h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            font-size: 22px;
+            letter-spacing: -0.02em;
+            color: var(--text);
+            margin: 0;
+        }
+        .list-count {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            color: var(--text-faint);
+        }
+
+        /* ─── Feed cards ─── */
+        #feed { margin-top: 0.5rem; }
+
+        .feed-card {
+            display: block;
+            padding: 1.25rem 1.5rem;
+            border-radius: 6px;
+            border: 1px solid transparent;
+            border-bottom: 1px solid var(--line-soft);
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            transition: background 350ms var(--ease-quiet), border-color 350ms var(--ease-quiet), box-shadow 350ms var(--ease-quiet);
+            position: relative;
+        }
+        .feed-card:hover {
+            background: var(--bg-elev);
+            border-color: var(--line);
+            box-shadow: 0 1px 12px rgba(0,0,0,0.25);
+        }
+        .feed-card:active {
+            background: rgba(201,169,97,0.04);
+        }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 0.35rem;
+        }
+        .card-title-row {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            min-width: 0;
+            flex: 1;
+        }
+        .card-unread-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            flex-shrink: 0;
+            transition: background 400ms var(--ease-quiet);
+        }
+        .card-unread-dot.read {
+            background: var(--text-faint);
+            opacity: 0.4;
+        }
+        .card-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 15px;
+            letter-spacing: -0.01em;
+            color: var(--text);
+            line-height: 1.3;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .card-date {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            color: var(--text-faint);
+            white-space: nowrap;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .card-preview {
+            font-size: 13px;
+            line-height: 1.55;
+            color: var(--text-mute);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+            word-break: break-word;
+        }
+        .card-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            color: var(--text-faint);
+            letter-spacing: 0.03em;
+        }
+        .card-meta-type {
+            text-transform: uppercase;
+            padding: 1px 6px;
+            border-radius: 3px;
+            border: 1px solid var(--line);
+            font-weight: 500;
+            font-size: 9px;
+            letter-spacing: 0.08em;
+        }
+        .card-meta-type.md { color: var(--accent); border-color: rgba(201,169,97,0.25); }
+        .card-meta-type.txt { color: #56b6c2; border-color: rgba(86,182,194,0.25); }
+        .card-meta-type.csv { color: #98c379; border-color: rgba(152,195,121,0.25); }
+
+        .card-delete-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-faint);
             font-size: 14px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            opacity: 0;
+            transition: opacity 300ms var(--ease-quiet), color 300ms ease, background 300ms ease;
+            flex-shrink: 0;
             line-height: 1;
         }
-        .back-btn:hover .back-btn-arrow { transform: translateX(-4px); }
-        /* ─────────── Main / Article ─────────── */
-        main {
+        .feed-card:hover .card-delete-btn { opacity: 1; }
+        .card-delete-btn:hover { color: #e06c75; background: rgba(224,108,117,0.08); }
+
+        /* ─── Empty state ─── */
+        #empty-state {
+            display: none;
+            text-align: center;
+            padding: 5rem 2rem;
+            color: var(--text-faint);
+        }
+        #empty-state .empty-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        #empty-state h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 1.3rem;
+            color: var(--text-mute);
+            margin-bottom: 0.5rem;
+        }
+        #empty-state p {
+            font-size: 14px;
+            color: var(--text-faint);
+            max-width: 360px;
+            margin: 0 auto;
+        }
+
+        /* ─── List error ─── */
+        #list-error {
+            display: none;
+            padding: 2rem 1.5rem;
+            border: 1px solid rgba(224,108,117,0.3);
+            border-radius: 6px;
+            background: rgba(224,108,117,0.04);
+            color: #e06c75;
+            font-size: 14px;
+            margin-top: 1rem;
+        }
+
+        /* ═══════════════ READER VIEW ═══════════════ */
+        #view-reader {
+            display: none;
             position: relative;
             z-index: 1;
             max-width: 760px;
             margin: 0 auto;
-            padding: 5rem 2rem 8rem;
-            transition: max-width 400ms var(--ease-quiet);
+            padding: 0 2rem 5rem;
         }
-        main.csv-active {
+        #view-reader.csv-active {
             max-width: min(94vw, 1400px);
         }
-        article#content { font-feature-settings: "kern" 1, "liga" 1; }
-        /* ─────────── Typography ─────────── */
+
+        .reader-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            padding: 1.5rem 0 0.75rem;
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid var(--line-soft);
+        }
+        .reader-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            color: var(--text-faint);
+        }
+        .reader-meta .sep { color: var(--line); }
+        .reader-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .pill-btn {
+            font-family: 'Inter', sans-serif;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.04em;
+            color: var(--text-mute);
+            background: transparent;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            padding: 0.4rem 0.9rem;
+            cursor: pointer;
+            transition: color 300ms ease, border-color 300ms ease, background 300ms ease;
+            white-space: nowrap;
+        }
+        .pill-btn:hover { color: var(--text); border-color: var(--text-mute); background: rgba(255,255,255,0.02); }
+        .pill-btn.accent { color: var(--accent); border-color: rgba(201,169,97,0.3); }
+        .pill-btn.accent:hover { border-color: var(--accent-dim); background: rgba(201,169,97,0.04); }
+        .pill-btn.danger { color: #e06c75; border-color: rgba(224,108,117,0.25); }
+        .pill-btn.danger:hover { border-color: #e06c75; background: rgba(224,108,117,0.06); }
+
+        /* ─── Article content (kept from original) ─── */
+        article#content { font-feature-settings: "kern" 1, "liga" 1; padding-top: 0.5rem; }
+
         h1, h2, h3, h4, h5, h6 {
             font-family: 'Montserrat', sans-serif;
             font-weight: 900;
@@ -247,7 +443,6 @@
             padding: 0.1em 0.3em;
             border-radius: 2px;
         }
-        /* ─────────── Inline code ─────────── */
         code {
             font-family: 'IBM Plex Mono', monospace;
             font-size: 0.86em;
@@ -258,7 +453,6 @@
             color: var(--accent);
             font-weight: 400;
         }
-        /* ─────────── Code blocks ─────────── */
         pre {
             background: var(--bg-code) !important;
             border: 1px solid var(--line);
@@ -278,7 +472,6 @@
             font-size: inherit;
             font-weight: 400;
         }
-        /* Custom Prism token palette tuned to forest-dark */
         .token.comment, .token.prolog, .token.doctype, .token.cdata { color: var(--text-faint); font-style: italic; }
         .token.punctuation { color: var(--text-mute); }
         .token.property, .token.tag, .token.constant, .token.symbol, .token.deleted { color: #c9a961; }
@@ -288,7 +481,7 @@
         .token.atrule, .token.attr-value, .token.function, .token.class-name { color: #a0b890; }
         .token.keyword { color: #c9a961; font-weight: 500; }
         .token.regex, .token.important { color: #d4956b; }
-        /* ─────────── Blockquote ─────────── */
+
         blockquote {
             margin: 2rem 0;
             padding: 1.25rem 1.75rem;
@@ -301,7 +494,6 @@
         blockquote p { margin-bottom: 0.75rem; color: var(--text-mute); }
         blockquote p:last-child { margin-bottom: 0; }
         blockquote strong { color: var(--text); }
-        /* ─────────── Lists ─────────── */
         ul, ol { margin: 1.5rem 0; padding-left: 1.5rem; }
         li { margin-bottom: 0.5rem; padding-left: 0.25rem; }
         li::marker { color: var(--accent); }
@@ -310,16 +502,13 @@
             font-size: 0.9em;
             color: var(--accent);
         }
-        /* Nested lists */
         ul ul, ol ol, ul ol, ol ul { margin: 0.5rem 0 0; }
-        /* Task lists */
         .task-list-item, li.task-list-item { list-style: none; margin-left: -1.5rem; }
         .task-list-item input[type="checkbox"] {
             margin-right: 0.6rem;
             accent-color: var(--accent);
             transform: translateY(2px);
         }
-        /* ─────────── Tables ─────────── */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -346,7 +535,6 @@
         }
         tbody tr { transition: background 300ms ease; }
         tbody tr:hover { background: rgba(201,169,97,0.03); }
-        /* ─────────── Horizontal rule ─────────── */
         hr {
             border: none;
             height: 1px;
@@ -365,7 +553,6 @@
             color: var(--accent);
             font-size: 0.7rem;
         }
-        /* ─────────── Images ─────────── */
         img {
             max-width: 100%;
             height: auto;
@@ -383,7 +570,6 @@
             margin-bottom: 2rem;
             font-style: italic;
         }
-        /* ─────────── Definition lists ─────────── */
         dt {
             font-family: 'Montserrat', sans-serif;
             font-weight: 800;
@@ -391,13 +577,13 @@
             color: var(--text);
         }
         dd { margin-left: 1.5rem; margin-top: 0.25rem; color: var(--text-mute); }
-        /* ─────────── Footnotes (if extension present) ─────────── */
         .footnote, sup {
             font-size: 0.75em;
             vertical-align: super;
             color: var(--accent);
         }
-        /* ─────────── Entrance animation ─────────── */
+
+        /* ─── Entrance animation for reader content ─── */
         #content > * {
             opacity: 0;
             transform: translateY(20px);
@@ -415,12 +601,8 @@
             #content > * { opacity: 1; transform: none; animation: none; }
             html { scroll-behavior: auto; }
         }
-        /* ─────────── Scrollbar ─────────── */
-        ::-webkit-scrollbar { width: 10px; height: 10px; }
-        ::-webkit-scrollbar-track { background: var(--bg); }
-        ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 5px; border: 2px solid var(--bg); }
-        ::-webkit-scrollbar-thumb:hover { background: var(--accent-dim); }
-        /* ─────────── Error state ─────────── */
+
+        /* ─── Error panel (reader) ─── */
         .error-panel {
             padding: 2.5rem;
             border: 1px solid var(--line);
@@ -429,14 +611,14 @@
             margin-top: 2rem;
         }
         .error-panel h1 { margin-top: 0; }
-        .error-panel code { font-size: 0.85em; }
-        /* ─────────── Footer ─────────── */
+
+        /* ─── Footer ─── */
         footer {
             position: relative;
             z-index: 1;
             max-width: 760px;
             margin: 0 auto;
-            padding: 0 2rem 4rem;
+            padding: 0 2rem 3rem;
             color: var(--text-faint);
             font-size: 0.82rem;
             font-family: 'IBM Plex Mono', monospace;
@@ -445,43 +627,92 @@
             justify-content: space-between;
             border-top: 1px solid var(--line-soft);
             padding-top: 2rem;
-            margin-top: 4rem;
+            margin-top: 2rem;
         }
-        /* ─────────── Mobile ─────────── */
+        footer.list-footer {
+            max-width: var(--feed-w);
+        }
+
+        /* ─── Responsive ─── */
         @media (max-width: 720px) {
-            header { padding: 1rem 1.25rem; }
-            .brand-file { display: none; }
-            main { padding: 3rem 1.25rem 5rem; }
+            #topbar { padding: 0 1rem; }
+            #view-list { padding: 1.25rem 1rem 4rem; }
+            #view-reader { padding: 0 1rem 4rem; }
+            .feed-card { padding: 1rem 1.1rem; }
+            .card-title { font-size: 14px; }
+            .card-date { font-size: 10px; }
+            .card-preview { font-size: 12px; -webkit-line-clamp: 2; }
+            .card-delete-btn { opacity: 1; }
+            .reader-bar { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+            .reader-actions { width: 100%; justify-content: flex-end; }
             body { font-size: 16px; }
             h1 { font-size: 2rem; }
             h2 { font-size: 1.5rem; }
             pre { padding: 1.25rem; font-size: 0.8rem; }
             footer { flex-direction: column; gap: 0.5rem; }
+            #topbar-filename { max-width: 140px; }
         }
     </style>
 </head>
 <body>
-    <nav id="md-tabs" style="position:sticky;top:0;z-index:50;">
-        <span class="brand-file" id="filename" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-faint);">text.md</span>
-        <a href="index.html" class="md-tab-home" aria-label="Home">Home</a>
-        <select id="md-selector">
-            <option value="" disabled selected>Scanning…</option>
-        </select>
+    <!-- ═══ TOP BAR ═══ -->
+    <nav id="topbar">
+        <div class="topbar-left">
+            <button id="back-btn"><span class="arrow">←</span> Feed</button>
+            <span class="brand"><span class="brand-dot"></span>Hermes</span>
+            <span id="topbar-filename"></span>
+        </div>
+        <div class="topbar-right">
+            <a href="index.html" class="topbar-link">Home</a>
+        </div>
     </nav>
-    <main>
+
+    <!-- ═══ LIST VIEW ═══ -->
+    <main id="view-list">
+        <div class="list-header">
+            <h1>Feed</h1>
+            <span class="list-count" id="feed-count"></span>
+        </div>
+        <div id="feed"></div>
+        <div id="empty-state">
+            <div class="empty-icon">📭</div>
+            <h2>No posts yet</h2>
+            <p>Drop a <code>.md</code>, <code>.txt</code>, or <code>.csv</code> file into this folder to see it here.</p>
+        </div>
+        <div id="list-error"></div>
+    </main>
+
+    <!-- ═══ READER VIEW ═══ -->
+    <main id="view-reader">
+        <div class="reader-bar">
+            <div class="reader-meta">
+                <span id="reader-date"></span>
+                <span class="sep">·</span>
+                <span id="reader-type"></span>
+                <span class="sep">·</span>
+                <span id="reader-lines"></span>
+            </div>
+            <div class="reader-actions">
+                <button class="pill-btn accent" id="reader-toggle-btn">Mark unread</button>
+                <button class="pill-btn danger" id="reader-delete-btn">Delete</button>
+            </div>
+        </div>
         <article id="content">
             <p style="color: var(--text-faint); font-family: 'IBM Plex Mono', monospace; font-size: 0.85rem;">Loading…</p>
         </article>
     </main>
-    <footer>
-        <span id="footer-meta">text.md · rendered locally</span>
+
+    <!-- ═══ FOOTER ═══ -->
+    <footer id="footer">
+        <span id="footer-meta">Hermes feed</span>
         <span id="footer-time"></span>
     </footer>
+
+    <!-- ═══ SCRIPTS ═══ -->
     <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
     <script>
-        // Configure marked for full GFM
         marked.setOptions({
             gfm: true,
             breaks: true,
@@ -490,22 +721,66 @@
             langPrefix: 'language-'
         });
 
-        const article = document.getElementById('content');
-        const fileLabel = document.getElementById('filename');
-        const mdSelector = document.getElementById('md-selector');
-        let currentFile = null;
+        /* ─── DOM refs ─── */
+        const $ = id => document.getElementById(id);
+        const viewList    = $('view-list');
+        const viewReader  = $('view-reader');
+        const feedEl      = $('feed');
+        const emptyState  = $('empty-state');
+        const listError   = $('list-error');
+        const feedCount   = $('feed-count');
+        const content     = $('content');
+        const backBtn     = $('back-btn');
+        const topbarFile  = $('topbar-filename');
+        const toggleBtn   = $('reader-toggle-btn');
+        const deleteBtn   = $('reader-delete-btn');
+        const readerDate  = $('reader-date');
+        const readerType  = $('reader-type');
+        const readerLines = $('reader-lines');
+        const footerMeta  = $('footer-meta');
+        const footerTime  = $('footer-time');
+        const footerEl    = $('footer');
 
-        // ── Rainbow CSV column colours ──
+        /* ─── State ─── */
+        let files = [];           // full file list from scan
+        let currentFile = null;   // name of file open in reader
+
+        /* ─── Rainbow CSV colours ─── */
         const RAINBOW_COLORS = [
-            '#e06c75', '#d19a66', '#e5c07b', '#98c379',
-            '#56b6c2', '#61afef', '#c678dd', '#be5046'
+            '#e06c75','#d19a66','#e5c07b','#98c379',
+            '#56b6c2','#61afef','#c678dd','#be5046'
         ];
 
+        /* ─── Utility ─── */
         function extFrom(name) {
             const m = name.match(/\.([^.]+)$/);
             return m ? m[1].toLowerCase() : '';
         }
 
+        function escapeHtml(str) {
+            const d = document.createElement('div');
+            d.textContent = str;
+            return d.innerHTML;
+        }
+
+        function formatDate(ts) {
+            const d = new Date(ts * 1000);
+            const now = new Date();
+            const diffDays = Math.floor((now - d) / (1000 * 60 * 60 * 24));
+            if (diffDays === 0) {
+                return 'Today ' + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            }
+            if (diffDays === 1) return 'Yesterday';
+            if (diffDays < 7) return diffDays + 'd ago';
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        function shortDate(ts) {
+            const d = new Date(ts * 1000);
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        /* ─── CSV parser (unchanged) ─── */
         function parseCSV(text) {
             const rows = [];
             const lines = text.split(/\r?\n/);
@@ -518,24 +793,13 @@
                     const ch = line[i];
                     if (inQ) {
                         if (ch === '"') {
-                            if (i + 1 < line.length && line[i + 1] === '"') {
-                                cur += '"';
-                                i++;
-                            } else {
-                                inQ = false;
-                            }
-                        } else {
-                            cur += ch;
-                        }
+                            if (i + 1 < line.length && line[i + 1] === '"') { cur += '"'; i++; }
+                            else { inQ = false; }
+                        } else { cur += ch; }
                     } else {
-                        if (ch === '"') {
-                            inQ = true;
-                        } else if (ch === ',') {
-                            fields.push(cur);
-                            cur = '';
-                        } else {
-                            cur += ch;
-                        }
+                        if (ch === '"') { inQ = true; }
+                        else if (ch === ',') { fields.push(cur); cur = ''; }
+                        else { cur += ch; }
                     }
                 }
                 fields.push(cur);
@@ -547,138 +811,274 @@
         function renderCSV(csvText) {
             const rows = parseCSV(csvText);
             if (!rows.length) return '<p style="color:var(--text-faint)">Empty CSV</p>';
-
             const maxCols = rows.reduce((m, r) => Math.max(m, r.length), 0);
             let html = '<div style="overflow-x:auto;border:1px solid var(--line);border-radius:6px;">';
             html += '<table style="border-collapse:collapse;width:100%;font-size:0.84rem;font-family:\'IBM Plex Mono\',monospace;margin:0;display:table;">';
-
             rows.forEach((row, ri) => {
                 html += '<tr>';
                 for (let ci = 0; ci < maxCols; ci++) {
                     const val = row[ci] !== undefined ? row[ci] : '';
                     if (ri === 0) {
-                        // Header row — muted, uppercase, no rainbow
                         html += `<th style="padding:0.6rem 0.75rem;border-right:1px solid var(--line-soft);border-bottom:2px solid var(--accent-dim);background:var(--bg-elev);color:var(--text-mute);font-family:'Montserrat',sans-serif;font-weight:700;font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;white-space:nowrap;">${escapeHtml(val)}</th>`;
                     } else {
                         const color = RAINBOW_COLORS[ci % RAINBOW_COLORS.length];
-                        const bg = color + '0d';
-                        html += `<td style="padding:0.45rem 0.75rem;border-right:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);background:${bg};color:${color};white-space:nowrap;">${escapeHtml(val)}</td>`;
+                        html += `<td style="padding:0.45rem 0.75rem;border-right:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);background:${color}0d;color:${color};white-space:nowrap;">${escapeHtml(val)}</td>`;
                     }
                 }
                 html += '</tr>';
             });
-
             html += '</table></div>';
             return html;
         }
 
-        function escapeHtml(str) {
-            const d = document.createElement('div');
-            d.textContent = str;
-            return d.innerHTML;
+        /* ─── API helpers ─── */
+        async function api(action, file) {
+            try {
+                const res = await fetch(`scan_files.php?action=${action}&file=${encodeURIComponent(file)}`);
+                return await res.json();
+            } catch { return { error: 'Network error' }; }
         }
 
-        function renderFile(filename) {
-            if (!filename) return;
-            currentFile = filename;
-            fileLabel.textContent = filename;
-            document.title = 'Hermes · ' + filename;
-            document.getElementById('footer-meta').textContent = filename + ' · rendered locally';
-            mdSelector.value = filename;
-
-            const mainEl = document.querySelector('main');
-
-            fetch(filename)
-                .then(r => {
-                    if (!r.ok) throw new Error('HTTP ' + r.status + ' — file not found or not accessible');
-                    return r.text();
-                })
-                .then(text => {
-                    const ext = extFrom(filename);
-
-                    if (ext === 'csv') {
-                        mainEl.classList.add('csv-active');
-                        article.innerHTML = renderCSV(text);
-                    } else {
-                        mainEl.classList.remove('csv-active');
-                        if (ext === 'txt') {
-                            article.innerHTML = `<pre style="background:var(--bg-code);border:1px solid var(--line);border-radius:6px;padding:1.5rem 1.75rem;overflow-x:auto;font-family:'IBM Plex Mono',monospace;font-size:0.86rem;line-height:1.65;color:var(--text);white-space:pre-wrap;word-break:break-word;margin:0;">${escapeHtml(text)}</pre>`;
-                        } else {
-                            article.innerHTML = marked.parse(text);
-                            if (window.Prism) Prism.highlightAllUnder(article);
-                        }
-                    }
-
-                    document.getElementById('footer-time').textContent = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-                })
-                .catch(err => {
-                    article.innerHTML = `
-                        <div class="error-panel">
-                            <h1>Couldn't load ${filename}</h1>
-                            <p style="color: var(--text-mute); margin-bottom: 1.5rem;">${err.message}.</p>
-                        </div>
-                    `;
-                    mainEl.classList.remove('csv-active');
-                    if (window.Prism) Prism.highlightAllUnder(article);
-                    document.getElementById('footer-meta').textContent = filename + ' · failed to load';
-                });
-        }
-
-        function setQueryParam(file) {
-            const url = new URL(window.location);
-            url.searchParams.set('file', file);
-            window.history.replaceState({ file: file }, '', url);
-        }
-
-        // Scan current directory for .md files via PHP utility
-        async function scanDirectory() {
+        async function loadFileList() {
             try {
                 const res = await fetch('scan_files.php');
-                const files = await res.json();
-
-                mdSelector.innerHTML = '<option value="" disabled>Select a file…</option>';
-
-                files.forEach(file => {
-                    const opt = document.createElement('option');
-                    opt.value = file;
-                    opt.textContent = file;
-                    mdSelector.appendChild(opt);
-                });
-
-                // Check query param first
-                const params = new URLSearchParams(window.location.search);
-                const queryFile = params.get('file');
-                const targetFile = queryFile && files.includes(queryFile) ? queryFile : null;
-
-                const defaultFile = targetFile || files.find(f => f === 'text.md' || f === 'text.txt' || f === 'text.csv') || files[0];
-                if (defaultFile) {
-                    renderFile(defaultFile);
-                    if (!queryFile || queryFile !== defaultFile) setQueryParam(defaultFile);
-                } else {
-                    document.getElementById('content').innerHTML = `
-                        <div class="error-panel">
-                            <h1>No viewable files found</h1>
-                            <p style="color: var(--text-mute);">Could not locate any <code>.md</code>, <code>.txt</code>, or <code>.csv</code> files in the current directory.</p>
-                        </div>
-                    `;
-                }
+                files = await res.json();
+                renderFeed();
             } catch (err) {
-                const params = new URLSearchParams(window.location.search);
-                const queryFile = params.get('file');
-                const fallback = queryFile || 'text.md';
-                mdSelector.innerHTML = `<option value="${fallback}">${fallback}</option>`;
-                renderFile(fallback);
-                setQueryParam(fallback);
+                showListError('Could not load file list. Make sure <code>scan_files.php</code> is accessible.');
             }
         }
 
-        mdSelector.addEventListener('change', () => {
-            renderFile(mdSelector.value);
-            setQueryParam(mdSelector.value);
+        /* ─── Feed rendering ─── */
+        function renderFeed() {
+            feedEl.innerHTML = '';
+            listError.style.display = 'none';
+
+            if (!files.length) {
+                feedEl.style.display = 'none';
+                emptyState.style.display = 'block';
+                feedCount.textContent = '0 posts';
+                footerMeta.textContent = 'Hermes feed · 0 files';
+                return;
+            }
+
+            feedEl.style.display = 'block';
+            emptyState.style.display = 'none';
+            feedCount.textContent = files.length + (files.length === 1 ? ' post' : ' posts');
+            footerMeta.textContent = 'Hermes feed · ' + files.length + ' file' + (files.length === 1 ? '' : 's');
+
+            for (const f of files) {
+                const card = document.createElement('a');
+                card.className = 'feed-card';
+                card.href = '#file=' + encodeURIComponent(f.name);
+
+                const dotClass = f.read ? 'read' : '';
+                const typeClass = f.type;
+
+                card.innerHTML = `
+                    <div class="card-top">
+                        <div class="card-title-row">
+                            <span class="card-unread-dot ${dotClass}"></span>
+                            <span class="card-title">${escapeHtml(f.title)}</span>
+                        </div>
+                        <span class="card-date">${formatDate(f.mtime)}</span>
+                    </div>
+                    <div class="card-preview">${escapeHtml(f.preview)}</div>
+                    <div class="card-meta">
+                        <span class="card-meta-type ${typeClass}">${f.type}</span>
+                        <span>${f.lines} line${f.lines !== 1 ? 's' : ''}</span>
+                        ${!f.read ? '<span style="color:var(--accent)">● Unread</span>' : ''}
+                        <span style="flex:1"></span>
+                        <button class="card-delete-btn" data-file="${escapeHtml(f.name)}" title="Delete">✕</button>
+                    </div>
+                `;
+
+                // Click on the card itself navigates via hash (handled by hashchange)
+                card.addEventListener('click', e => {
+                    // If the delete button was clicked, don't navigate
+                    if (e.target.closest('.card-delete-btn')) {
+                        e.preventDefault();
+                        return;
+                    }
+                    // Let the default link navigation happen
+                });
+
+                // Delete button
+                const delBtn = card.querySelector('.card-delete-btn');
+                delBtn.addEventListener('click', async e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    await confirmAndDelete(f.name);
+                });
+
+                feedEl.appendChild(card);
+            }
+        }
+
+        function showListError(msg) {
+            listError.innerHTML = msg;
+            listError.style.display = 'block';
+            feedEl.style.display = 'none';
+            emptyState.style.display = 'none';
+            feedCount.textContent = 'Error';
+        }
+
+        /* ─── Delete ─── */
+        async function confirmAndDelete(name) {
+            if (!confirm(`Delete "${name}"?\nThis cannot be undone.`)) return;
+            const result = await api('delete', name);
+            if (result.ok) {
+                // Remove from local array
+                files = files.filter(f => f.name !== name);
+                // If currently viewing this file in reader, go back
+                if (currentFile === name) goBack();
+                else renderFeed();
+            } else {
+                alert('Delete failed: ' + (result.error || 'unknown error'));
+            }
+        }
+
+        /* ─── View switching ─── */
+        function showListView() {
+            viewReader.style.display = 'none';
+            viewList.style.display = 'block';
+            backBtn.style.display = 'none';
+            topbarFile.style.display = 'none';
+            footerEl.classList.add('list-footer');
+            // Update hash if needed
+            if (window.location.hash.startsWith('#file=')) {
+                history.replaceState(null, '', window.location.pathname);
+            }
+            document.title = 'Hermes · Feed';
+            currentFile = null;
+            renderFeed(); // re-render to pick up any status changes
+        }
+
+        function showReaderView(name) {
+            currentFile = name;
+            viewList.style.display = 'none';
+            viewReader.style.display = 'block';
+            backBtn.style.display = 'flex';
+            topbarFile.style.display = 'inline';
+            topbarFile.textContent = name;
+            footerEl.classList.remove('list-footer');
+            document.title = 'Hermes · ' + name;
+
+            // Mark as read (fire-and-forget) + update local state
+            api('mark_read', name).then(r => {
+                if (r.ok) {
+                    const f = files.find(f => f.name === name);
+                    if (f) f.read = true;
+                }
+            });
+
+            // Update reader meta
+            const fileInfo = files.find(f => f.name === name);
+            if (fileInfo) {
+                readerDate.textContent = shortDate(fileInfo.mtime);
+                readerType.textContent = fileInfo.type.toUpperCase();
+                readerLines.textContent = fileInfo.lines + ' line' + (fileInfo.lines !== 1 ? 's' : '');
+                toggleBtn.textContent = 'Mark unread';
+                toggleBtn.className = 'pill-btn accent';
+                footerMeta.textContent = name + ' · reading';
+            } else {
+                readerDate.textContent = '—';
+                readerType.textContent = extFrom(name).toUpperCase();
+                readerLines.textContent = '—';
+            }
+
+            loadFileContent(name);
+        }
+
+        /* ─── Load file content ─── */
+        async function loadFileContent(name) {
+            content.innerHTML = '<p style="color: var(--text-faint); font-family: \'IBM Plex Mono\', monospace; font-size: 0.85rem;">Loading…</p>';
+
+            try {
+                const res = await fetch(name);
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const text = await res.text();
+                const ext = extFrom(name);
+
+                if (ext === 'csv') {
+                    viewReader.classList.add('csv-active');
+                    content.innerHTML = renderCSV(text);
+                } else {
+                    viewReader.classList.remove('csv-active');
+                    if (ext === 'txt') {
+                        content.innerHTML = `<pre style="background:var(--bg-code);border:1px solid var(--line);border-radius:6px;padding:1.5rem 1.75rem;overflow-x:auto;font-family:'IBM Plex Mono',monospace;font-size:0.86rem;line-height:1.65;color:var(--text);white-space:pre-wrap;word-break:break-word;margin:0;">${escapeHtml(text)}</pre>`;
+                    } else {
+                        content.innerHTML = marked.parse(text);
+                        if (window.Prism) Prism.highlightAllUnder(content);
+                    }
+                }
+
+                footerTime.textContent = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            } catch (err) {
+                viewReader.classList.remove('csv-active');
+                content.innerHTML = `
+                    <div class="error-panel">
+                        <h1>Couldn't load ${escapeHtml(name)}</h1>
+                        <p style="color: var(--text-mute); margin-bottom: 1.5rem;">${escapeHtml(err.message)}.</p>
+                    </div>
+                `;
+                footerMeta.textContent = name + ' · failed to load';
+            }
+        }
+
+        /* ─── Navigation ─── */
+        function goBack() {
+            const wasFile = currentFile;
+            currentFile = null;
+            showListView();
+        }
+
+        backBtn.addEventListener('click', goBack);
+
+        /* ─── Reader actions ─── */
+        toggleBtn.addEventListener('click', async () => {
+            if (!currentFile) return;
+            const result = await api('toggle_read', currentFile);
+            if (result.ok) {
+                const f = files.find(f => f.name === currentFile);
+                if (result.read) {
+                    toggleBtn.textContent = 'Mark unread';
+                    toggleBtn.className = 'pill-btn accent';
+                    if (f) f.read = true;
+                } else {
+                    toggleBtn.textContent = 'Mark read';
+                    toggleBtn.className = 'pill-btn';
+                    if (f) f.read = false;
+                }
+            }
         });
 
-        // Initial scan and render
-        scanDirectory();
+        deleteBtn.addEventListener('click', async () => {
+            if (!currentFile) return;
+            await confirmAndDelete(currentFile);
+        });
+
+        /* ─── Hash routing ─── */
+        function handleHash() {
+            const hash = window.location.hash;
+            const match = hash.match(/^#file=(.+)/);
+            if (match) {
+                const name = decodeURIComponent(match[1]);
+                showReaderView(name);
+            } else {
+                showListView();
+            }
+        }
+
+        window.addEventListener('hashchange', handleHash);
+
+        /* ─── Init ─── */
+        async function init() {
+            await loadFileList();
+            handleHash();
+        }
+
+        init();
     </script>
 </body>
 </html>

@@ -1,4 +1,5 @@
 data.json
+.hermes_status.json
 # Ignore backup files
 *.bak
 # Ignore future .md, .html, and .csv files (keep only currently tracked ones)
