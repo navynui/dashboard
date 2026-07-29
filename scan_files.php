@@ -5,15 +5,14 @@ $dir = __DIR__;
 
 // ── Pick a writable location for the status file ──
 $statusFile = $dir . DIRECTORY_SEPARATOR . '.hermes_status.json';
-$statusDir = $dir;
+$statusDir  = $dir;
 if (!is_writable($dir) || (file_exists($statusFile) && !is_writable($statusFile))) {
-    $fallback = sys_get_temp_dir() . DIRECTORY_SEPARATOR . '.hermes_status_' . md5($dir) . '.json';
-    $statusFile = $fallback;
-    $statusDir = dirname($statusFile);
+    $fallback      = sys_get_temp_dir() . DIRECTORY_SEPARATOR . '.hermes_status_' . md5($dir) . '.json';
+    $statusFile    = $fallback;
+    $statusDir     = dirname($statusFile);
 }
 
 // ── Status helpers ──
-
 function loadStatus($path) {
     if (!file_exists($path)) return [];
     $raw = @file_get_contents($path);
@@ -27,10 +26,9 @@ function saveStatus($path, $data) {
 }
 
 // ── File helpers ──
-
 function sanitizeFile($name) {
     $name = basename($name);
-    $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+    $ext  = strtolower(pathinfo($name, PATHINFO_EXTENSION));
     if (!in_array($ext, ['md', 'txt', 'csv'])) return null;
     return $name;
 }
@@ -80,9 +78,8 @@ function getTitle($name, $fullPath) {
 }
 
 // ── Handle actions ──
-
 $action = $_GET['action'] ?? null;
-$file = isset($_GET['file']) ? sanitizeFile($_GET['file']) : null;
+$file   = isset($_GET['file']) ? sanitizeFile($_GET['file']) : null;
 
 if ($action && !$file) {
     echo json_encode(['error' => 'Missing or invalid file parameter']);
@@ -108,8 +105,8 @@ if ($action === 'mark_unread' && $file) {
 if ($action === 'toggle_read' && $file) {
     $current = $status[$file]['read'] ?? false;
     $status[$file] = [
-        'read' => !$current,
-        'readAt' => !$current ? date('c') : null
+        'read'   => !$current,
+        'readAt' => !$current ? date('c') : null,
     ];
     saveStatus($statusFile, $status);
     echo json_encode(['ok' => true, 'read' => !$current]);
@@ -122,9 +119,12 @@ if ($action === 'delete' && $file) {
         echo json_encode(['error' => 'File not found']);
         exit;
     }
-    if (!is_writable($fullPath)) {
-        echo json_encode(['error' => 'File not writable']);
+    if (!is_writable($dir)) {
+        echo json_encode(['error' => 'Directory not writable']);
         exit;
+    }
+    if (!is_writable($fullPath)) {
+        // Attempt unlink regardless — on many setups unlink is governed by directory perms, not file perms
     }
     if (@unlink($fullPath)) {
         unset($status[$file]);
@@ -137,7 +137,6 @@ if ($action === 'delete' && $file) {
 }
 
 // ── Scan mode (default) ──
-
 $items = scandir($dir);
 $files = [];
 
@@ -149,12 +148,14 @@ if ($items) {
         $ext = strtolower(pathinfo($item, PATHINFO_EXTENSION));
         if (!in_array($ext, ['md', 'txt', 'csv'])) continue;
 
-        $mtime   = filemtime($fullPath);
-        $size    = filesize($fullPath);
-        $lines   = 0;
-        $lc      = @fopen($fullPath, 'r');
+        $mtime = filemtime($fullPath);
+        $size  = filesize($fullPath);
+        $lines = 0;
+        $lc = @fopen($fullPath, 'r');
         if ($lc) {
-            while (!feof($lc)) { if (fgets($lc) !== false) $lines++; }
+            while (!feof($lc)) {
+                if (fgets($lc) !== false) $lines++;
+            }
             fclose($lc);
         }
 
