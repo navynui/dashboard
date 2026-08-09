@@ -834,14 +834,14 @@
         /* ─── API helpers ─── */
         async function api(action, file) {
             try {
-                const res = await fetch(`scan_files.php?action=${action}&file=${encodeURIComponent(file)}`);
+                const res = await fetch(`scan_files.php?action=${action}&file=${encodeURIComponent(file)}&_=${Date.now()}`, { cache: 'no-store' });
                 return await res.json();
             } catch { return { error: 'Network error' }; }
         }
 
         async function loadFileList() {
             try {
-                const res = await fetch('scan_files.php');
+                const res = await fetch('scan_files.php?_=' + Date.now(), { cache: 'no-store' });
                 files = await res.json();
                 renderFeed();
             } catch (err) {
@@ -995,7 +995,11 @@
             content.innerHTML = '<p style="color: var(--text-faint); font-family: \'IBM Plex Mono\', monospace; font-size: 0.85rem;">Loading…</p>';
 
             try {
-                const res = await fetch(name);
+                // Cache-bust with the file's mtime (from scan_files.php) so an updated
+                // CSV/MD is always re-fetched past browser AND Cloudflare caches.
+                const fileInfo = files.find(f => f.name === name);
+                const cacheKey = (fileInfo && fileInfo.mtime) ? fileInfo.mtime : Date.now();
+                const res = await fetch(name + '?v=' + cacheKey, { cache: 'no-store' });
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 const text = await res.text();
                 const ext = extFrom(name);
