@@ -1,37 +1,66 @@
 {
   "providers": {
-    "llama-cpp": {
-      "baseUrl": "http://192.168.31.93:8080/v1",
+    "llama-cpp1": {
+      "baseUrl": "http://localhost:8080/v1",
       "api": "openai-completions",
       "apiKey": "not-needed",
       "models": [
         {
-          "id": "agents-a1-IQ4_XS.gguf",
-          "contextWindow": 65536
-        },
-        {
-          "id": "deepreinforce-ai_Ornith-1.0-35B-IQ4_XS.gguf",
-          "contextWindow": 65536
-        },
-        {
-          "id": "gemma-4-26B-A4B-it-UD-IQ4_XS.gguf",
-          "contextWindow": 65536
-        },
-        {
-          "id": "gemma-4-E4B-it-qat-UD-Q4_K_XL.gguf",
-          "contextWindow": 65536
-        },
-        {
-          "id": "Gemma-4-E2B-Uncensored-HauhauCS-Aggressive-Q8_K_P.gguf",
-          "contextWindow": 65536
+          "id": "Kwaipilot_KAT-Coder-V2.5-Dev-MTP-UD-IQ4_XS.gguf",
+          "contextWindow": 65536,
+          "tags": ["chat", "coder"]
         },
         {
           "id": "NVIDIA-Nemotron-Labs-3-Elastic-12B-A2B.i1-Q5_K_M.gguf",
-          "contextWindow": 65536
+          "contextWindow": 65536,
+          "tags": ["fast", "judge"]
         },
         {
-          "id": "NVIDIA-Nemotron-Labs-3-Elastic-30B-A3B-BF16.i1-IQ4_XS.gguf",
-          "contextWindow": 65536
+          "id": "Qwen3.5-9B-The-Defiant-Fable-Uncnr-Heretic-NEO-MAX-MTP-Q8_0.gguf",
+          "contextWindow": 131072,
+          "tags": ["smart", "uncensored"]
+        },
+        {
+          "id": "Qwen3.8-27B-UD-IQ3_S.gguf",
+          "contextWindow": 65536,
+          "tags": []
+        },
+        {
+          "id": "agents-a1-IQ4_XS-MTP-graft-headQ6.gguf",
+          "contextWindow": 65536,
+          "tags": ["coding", "research"]
+        },
+        {
+          "id": "gemma-4-12B-it-qat-UD-Q4_K_XL.gguf",
+          "contextWindow": 65536,
+          "tags": []
+        },
+        {
+          "id": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf",
+          "contextWindow": 65536,
+          "tags": ["chat", "multilingual"]
+        }
+      ]
+    },
+    "llama-cpp2": {
+      "baseUrl": "http://localhost:8081/v1",
+      "api": "openai-completions",
+      "apiKey": "not-needed",
+      "models": [
+        {
+          "id": "Agents-A1-4B-Q4_K_M.gguf",
+          "contextWindow": 65536,
+          "tags": ["agent", "research", "vision"]
+        },
+        {
+          "id": "Gemma-4-E2B-Uncensored-HauhauCS-Aggressive-Q8_K_P.gguf",
+          "contextWindow": 65536,
+          "tags": ["chat", "multilingual"]
+        },
+        {
+          "id": "gemma-4-E4B-it-qat-UD-Q4_K_XL.gguf",
+          "contextWindow": 65536,
+          "tags": ["chat", "multilingual"]
         }
       ]
     }
